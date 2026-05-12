@@ -16,18 +16,15 @@ if "ready" not in st.session_state:
 # ----------------------------
 # UPLOAD SECTION (always visible)
 # ----------------------------
-uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
+uploaded_file = st.file_uploader("Upload PDF")
 
 if uploaded_file:
-    if not st.session_state.ready:
-        with open("temp.pdf", "wb") as f:
-            f.write(uploaded_file.read())
+    with open("temp.pdf", "wb") as f:
+        f.write(uploaded_file.read())
 
-        with st.spinner("Indexing PDF..."):
-            ingest_pdf("temp.pdf")
-
-        st.session_state.ready = True
-        st.success("PDF ready! Ask questions below 👇")
+    ingest_pdf("temp.pdf")
+    st.session_state.ready = True
+    st.success("PDF ready! Ask questions below 👇")
 
 
 # ----------------------------
