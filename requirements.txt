@@ -6,7 +6,7 @@ langchain==0.2.14
 langchain-community==0.2.12
 langchain-groq==0.1.9
 
-chromadb==0.5.5
+chromadb==0.4.24
 pypdf==5.0.1
 
 sentence-transformers==3.0.1
