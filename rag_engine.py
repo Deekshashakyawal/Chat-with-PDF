@@ -29,6 +29,8 @@ llm = ChatGroq(
 # PDF → Vector DB
 # ----------------------------
 def ingest_pdf(pdf_path):
+    if os.path.exists(DB_DIR):
+        shutil.rmtree(DB_DIR) 
     loader = PyPDFLoader(pdf_path)
     pages = loader.load()
 
@@ -45,7 +47,8 @@ def ingest_pdf(pdf_path):
         persist_directory=DB_DIR
     )
 
-    db.persist()
+    #db.persist()
+    os.remove(pdf_path)
     return len(docs)
 
 # ----------------------------
@@ -69,12 +72,16 @@ def query(question, history):
     context = "\n\n".join([d.page_content for d in docs])
 
     # Build conversation history
+    recent_history = history[-6:]
     history_text = ""
-    for h in history:
+    for h in recent_history:
         history_text += f"User: {h['user']}\nAssistant: {h['bot']}\n"
 
     prompt = f"""
 You are an AI assistant answering questions from a PDF.
+
+Context:
+{context}
 
 Conversation history:
 {history_text}
@@ -82,9 +89,6 @@ Conversation history:
 Rules:
 - Answer ONLY using the given context
 - If answer is not in context, say: "I don't have that information."
-
-Context:
-{context}
 
 Question: {question}
 
@@ -94,6 +98,6 @@ Answer:
     response = llm.invoke(prompt)
     answer = response.content if hasattr(response, "content") else str(response)
 
-    pages = list(set([d.metadata.get("page", 0) for d in docs]))
+    pages = sorted(set([d.metadata.get("page", 0) + 1 for d in docs]))
 
     return answer, pages
