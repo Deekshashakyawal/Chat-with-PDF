@@ -24,6 +24,7 @@ llm = ChatGroq(
 # ----------------------------
 # Helper → create embeddings fresh each time
 # ----------------------------
+@st.cache_resource
 def get_embeddings():
     return HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -72,6 +73,7 @@ def ingest_pdf(pdf_path):
 # ----------------------------
 # Load Vector DB
 # ----------------------------
+@st.cache_resource
 def load_db():
     embeddings = get_embeddings()
 
