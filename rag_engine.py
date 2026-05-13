@@ -12,7 +12,12 @@ from chromadb.config import Settings
 load_dotenv()
 
 DB_DIR = "chroma_db"
-
+CHROMA_SETTINGS = Settings(
+    anonymized_telemetry=False,
+    is_persistent=True,
+    persist_directory=DB_DIR,
+    allow_reset=True,
+)
 
 # ----------------------------
 # Groq LLM (UPDATED MODEL)
@@ -49,15 +54,13 @@ def ingest_pdf(pdf_path):
     docs = splitter.split_documents(pages)
     
     embeddings = get_embeddings()
-    client_settings = Settings(
-        anonymized_telemetry=False,
-        is_persistent=True,
-    )
+    
     db = Chroma.from_documents(
         documents=docs,
         embedding=embeddings,
+        client_settings=CHROMA_SETTINGS,
         persist_directory=DB_DIR,
-        client_settings=client_settings
+        collection_name="pdf_collection" 
     )
 
     db.persist()
@@ -69,14 +72,12 @@ def ingest_pdf(pdf_path):
 # ----------------------------
 def load_db():
     embeddings = get_embeddings()
-    client_settings = Settings(
-        anonymized_telemetry=False,
-        is_persistent=True,
-    )
+
     return Chroma(
         persist_directory=DB_DIR,
         embedding_function=embeddings,
-        client_settings=client_settings
+        client_settings=CHROMA_SETTINGS,
+        collection_name="pdf_collection" 
     )
 
 # ----------------------------
