@@ -1,5 +1,4 @@
 import os
-import shutil
 import gc
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -12,7 +11,7 @@ load_dotenv()
 
 DB_DIR = "/tmp/chroma_db"
 
-
+COLLECTION_NAME = "pdf_collection"
 # ----------------------------
 # Groq LLM (UPDATED MODEL)
 # ----------------------------
@@ -35,11 +34,7 @@ def get_embeddings():
 # ----------------------------
 def ingest_pdf(pdf_path):
     gc.collect()
-    os.makedirs(DB_DIR, exist_ok=True)
 
-    if os.path.exists(DB_DIR):
-        shutil.rmtree(DB_DIR) 
-        os.makedirs(DB_DIR, exist_ok=True)
     loader = PyPDFLoader(pdf_path)
     pages = loader.load()
 
@@ -52,10 +47,22 @@ def ingest_pdf(pdf_path):
     
     embeddings = get_embeddings()
     
+    db = Chroma(
+        persist_directory=DB_DIR,
+        embedding_function=embeddings,
+        collection_name=COLLECTION_NAME
+    )
+
+    try:
+        db.delete_collection()
+    except:
+        pass
+
     db = Chroma.from_documents(
         documents=docs,
         embedding=embeddings,
-        persist_directory=DB_DIR
+        persist_directory=DB_DIR,
+        collection_name=COLLECTION_NAME
     )
 
     db.persist()
@@ -70,7 +77,8 @@ def load_db():
 
     return Chroma(
         persist_directory=DB_DIR,
-        embedding_function=embeddings
+        embedding_function=embeddings,
+        collection_name=COLLECTION_NAME
     )
 
 # ----------------------------
