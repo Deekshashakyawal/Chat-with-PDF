@@ -25,7 +25,6 @@ llm = ChatGroq(
 # ----------------------------
 # Helper → create embeddings fresh each time
 # ----------------------------
-@lru_cache(maxsize=1)
 def get_embeddings():
     return HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -124,4 +123,4 @@ Answer:
 
     pages = sorted(set([d.metadata.get("page", 0) + 1 for d in docs]))
 
-    return llm.stream(prompt), pages
+    return answer, pages
