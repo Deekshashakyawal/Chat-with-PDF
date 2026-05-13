@@ -124,4 +124,4 @@ Answer:
 
     pages = sorted(set([d.metadata.get("page", 0) + 1 for d in docs]))
 
-    return answer, pages
+    return llm.stream(prompt), pages
