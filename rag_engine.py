@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_DIR = "chroma_db"
+DB_DIR = "/tmp/chroma_db"
 
 
 # ----------------------------
@@ -35,8 +35,11 @@ def get_embeddings():
 # ----------------------------
 def ingest_pdf(pdf_path):
     gc.collect()
+    os.makedirs(DB_DIR, exist_ok=True)
+
     if os.path.exists(DB_DIR):
         shutil.rmtree(DB_DIR) 
+        os.makedirs(DB_DIR, exist_ok=True)
     loader = PyPDFLoader(pdf_path)
     pages = loader.load()
 
