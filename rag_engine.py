@@ -1,5 +1,6 @@
 import os
 import shutil
+import gc
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -11,12 +12,6 @@ load_dotenv()
 
 DB_DIR = "chroma_db"
 
-# ----------------------------
-# Embeddings model (FREE)
-# ----------------------------
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
 
 # ----------------------------
 # Groq LLM (UPDATED MODEL)
@@ -26,10 +21,20 @@ llm = ChatGroq(
     groq_api_key=os.getenv("GROQ_API_KEY")
 )
 
+
+# ----------------------------
+# Helper → create embeddings fresh each time
+# ----------------------------
+def get_embeddings():
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+
 # ----------------------------
 # PDF → Vector DB
 # ----------------------------
 def ingest_pdf(pdf_path):
+    gc.collect()
     if os.path.exists(DB_DIR):
         shutil.rmtree(DB_DIR) 
     loader = PyPDFLoader(pdf_path)
@@ -41,6 +46,8 @@ def ingest_pdf(pdf_path):
     )
 
     docs = splitter.split_documents(pages)
+    
+    embeddings = get_embeddings()
 
     db = Chroma.from_documents(
         documents=docs,
@@ -48,7 +55,7 @@ def ingest_pdf(pdf_path):
         persist_directory=DB_DIR
     )
 
-    #db.persist()
+    db.persist()
     os.remove(pdf_path)
     return len(docs)
 
@@ -56,6 +63,7 @@ def ingest_pdf(pdf_path):
 # Load Vector DB
 # ----------------------------
 def load_db():
+    embeddings = get_embeddings()
     return Chroma(
         persist_directory=DB_DIR,
         embedding_function=embeddings
