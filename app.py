@@ -57,27 +57,37 @@ if st.session_state.ready:
     user_question = st.chat_input("Ask a question about the PDF")
 
     if user_question:
-        answer, pages = query(user_question, st.session_state.history)
-
-        st.session_state.history.append({
-            "user": user_question,
-            "bot": answer,
-            "pages": pages
-        })
-
-    # Render chat history
-    for chat in st.session_state.history:
         with st.chat_message("user"):
-            st.write(chat["user"])
+            st.write(user_question)
 
         with st.chat_message("assistant"):
             placeholder = st.empty()
             full_response = ""
+            
+            stream, pages = stream_query(user_question, st.session_state.history)
+            
+            for chunk in stream:
+                # Groq chunks have .content attribute
+                token = chunk.content if hasattr(chunk, "content") else str(chunk)
+                full_response += token
+                placeholder.write(full_response + "▌")  # typing cursor
+            
+            placeholder.write(full_response)  # final clean render
+            st.caption(f"📚 Pages: {pages}")
+
+        st.session_state.history.append({
+            "user": user_question,
+            "bot": full_response,
+            "pages": pages
+        })
+
+    # Render chat history
+    for chat in st.session_state.history[:-1]:
+        with st.chat_message("user"):
+            st.write(chat["user"])
+
+        with st.chat_message("assistant"):
             st.write(chat["bot"])
-            for chunk in llm.stream(prompt):
-                full_response += chunk.content
-                placeholder.write(full_response + "▌")
-            placeholder.write(full_response)
             st.caption(f"📚 Pages: {chat['pages']}")
 else:
     st.info("👆 Upload a PDF to start chatting")
