@@ -22,12 +22,13 @@ if uploaded_file is not None:
         st.error("Only PDF files are allowed!")
         st.stop()
 if uploaded_file:
-    with open("temp.pdf", "wb") as f:
-        f.write(uploaded_file.read())
+    if not st.session_state.ready:
+        with open("temp.pdf", "wb") as f:
+            f.write(uploaded_file.read())
 
-    ingest_pdf("temp.pdf")
-    st.session_state.ready = True
-    st.success("PDF ready! Ask questions below 👇")
+        ingest_pdf("temp.pdf")
+        st.session_state.ready = True
+        st.success("PDF ready! Ask questions below 👇")
 
 
 # ----------------------------
