@@ -71,7 +71,13 @@ if st.session_state.ready:
             st.write(chat["user"])
 
         with st.chat_message("assistant"):
+            placeholder = st.empty()
+            full_response = ""
             st.write(chat["bot"])
+            for chunk in llm.stream(prompt):
+                full_response += chunk.content
+                placeholder.write(full_response + "▌")
+            placeholder.write(full_response)
             st.caption(f"📚 Pages: {chat['pages']}")
 else:
     st.info("👆 Upload a PDF to start chatting")
