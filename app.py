@@ -56,6 +56,15 @@ if uploaded_file:
 if st.session_state.ready:
     user_question = st.chat_input("Ask a question about the PDF")
 
+     # Render chat history
+    for chat in st.session_state.history[:-1]:
+        with st.chat_message("user"):
+            st.write(chat["user"])
+
+        with st.chat_message("assistant"):
+            st.write(chat["bot"])
+            st.caption(f"📚 Pages: {chat['pages']}")
+
     if user_question:
         with st.chat_message("user"):
             st.write(user_question)
@@ -81,13 +90,6 @@ if st.session_state.ready:
             "pages": pages
         })
 
-    # Render chat history
-    for chat in st.session_state.history[:-1]:
-        with st.chat_message("user"):
-            st.write(chat["user"])
-
-        with st.chat_message("assistant"):
-            st.write(chat["bot"])
-            st.caption(f"📚 Pages: {chat['pages']}")
+   
 else:
     st.info("👆 Upload a PDF to start chatting")
