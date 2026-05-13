@@ -56,8 +56,16 @@ if uploaded_file:
 if st.session_state.ready:
     user_question = st.chat_input("Ask a question about the PDF")
 
+    if user_question:
+        answer, pages = query(user_question, st.session_state.history)
+
+        st.session_state.history.append({
+            "user": user_question,
+            "bot": answer,
+            "pages": pages
+        })
      # Render chat history
-    for chat in st.session_state.history[:-1]:
+    for chat in st.session_state.history:
         with st.chat_message("user"):
             st.write(chat["user"])
 
@@ -65,31 +73,5 @@ if st.session_state.ready:
             st.write(chat["bot"])
             st.caption(f"📚 Pages: {chat['pages']}")
 
-    if user_question:
-        with st.chat_message("user"):
-            st.write(user_question)
-
-        with st.chat_message("assistant"):
-            placeholder = st.empty()
-            full_response = ""
-            
-            stream, pages = query(user_question, st.session_state.history)
-            
-            for chunk in stream:
-                # Groq chunks have .content attribute
-                token = chunk.content if hasattr(chunk, "content") else str(chunk)
-                full_response += token
-                placeholder.write(full_response + "▌")  # typing cursor
-            
-            placeholder.write(full_response)  # final clean render
-            st.caption(f"📚 Pages: {pages}")
-
-        st.session_state.history.append({
-            "user": user_question,
-            "bot": full_response,
-            "pages": pages
-        })
-
-   
 else:
     st.info("👆 Upload a PDF to start chatting")
