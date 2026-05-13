@@ -7,17 +7,11 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
-from chromadb.config import Settings
 
 load_dotenv()
 
 DB_DIR = "chroma_db"
-CHROMA_SETTINGS = Settings(
-    anonymized_telemetry=False,
-    is_persistent=True,
-    persist_directory=DB_DIR,
-    allow_reset=True,
-)
+
 
 # ----------------------------
 # Groq LLM (UPDATED MODEL)
@@ -58,9 +52,7 @@ def ingest_pdf(pdf_path):
     db = Chroma.from_documents(
         documents=docs,
         embedding=embeddings,
-        client_settings=CHROMA_SETTINGS,
-        persist_directory=DB_DIR,
-        collection_name="pdf_collection" 
+        persist_directory=DB_DIR
     )
 
     db.persist()
@@ -75,9 +67,7 @@ def load_db():
 
     return Chroma(
         persist_directory=DB_DIR,
-        embedding_function=embeddings,
-        client_settings=CHROMA_SETTINGS,
-        collection_name="pdf_collection" 
+        embedding_function=embeddings
     )
 
 # ----------------------------
