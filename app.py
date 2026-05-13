@@ -64,7 +64,7 @@ if st.session_state.ready:
             placeholder = st.empty()
             full_response = ""
             
-            stream, pages = stream_query(user_question, st.session_state.history)
+            stream, pages = query(user_question, st.session_state.history)
             
             for chunk in stream:
                 # Groq chunks have .content attribute
